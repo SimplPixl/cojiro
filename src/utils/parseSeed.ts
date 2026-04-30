@@ -1,5 +1,16 @@
-import { SeedReturnType } from "../server/external/createSeed";
-import { TRPCError } from "@trpc/server";
+export interface SeedReturnType {
+	":version": string;
+	file_hash: string[];
+	":seed": string;
+	":settings_string": string;
+	settings: {
+		starting_items: Record<string, number>;
+		[key: string]: unknown;
+	};
+	locations: Record<string, string | { item: string; price: number }>;
+	gossip_stones: Record<string, { text: string; colors: string[] }>;
+	[key: string]: unknown;
+}
 
 export interface ParsedSeed {
 	locations: Record<
@@ -13,19 +24,6 @@ export interface ParsedSeed {
 	seedValue: string;
 	settingsString: string;
 }
-
-const requiredSettings = {
-	shopsanity: "off",
-	mq_dungeons_mode: "vanilla",
-	triforce_hunt: false,
-	world_count: 1,
-	shuffle_beans: false,
-	shuffle_ocarinas: false,
-	shuffle_interior_entrances: "off",
-	shuffle_grotto_entrances: false,
-	shuffle_dungeon_entrances: "off",
-	shuffle_overworld_entrances: false,
-};
 
 function parseSeed(seed: SeedReturnType): ParsedSeed {
 	const locations: ParsedSeed["locations"] = Object.keys(seed.locations).reduce(
@@ -44,16 +42,6 @@ function parseSeed(seed: SeedReturnType): ParsedSeed {
 	const gossip_stones: ParsedSeed["gossip_stones"] = Object.keys(
 		seed.gossip_stones
 	).reduce((acc, el) => ({ ...acc, [el]: seed.gossip_stones[el]!.text }), {});
-
-	let setting: keyof typeof requiredSettings;
-	for (setting in requiredSettings) {
-		if (seed.settings[setting] !== requiredSettings[setting]) {
-			throw new TRPCError({
-				code: "METHOD_NOT_SUPPORTED",
-				message: `Seed must have ${setting} set to ${requiredSettings[setting]}`,
-			});
-		}
-	}
 
 	return {
 		locations,

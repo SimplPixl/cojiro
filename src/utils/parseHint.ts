@@ -37,16 +37,19 @@ const parseHint = (
 	| { type: "path"; region: string; location: string }
 	| { type: "item"; item: string; location: string }
 	| { type: "junk" } => {
-	// let oneMatch = /#([^#]+)#/.exec(hint);
-	// let firstKeyword = oneMatch && oneMatch[1];
-	// let twoMatch = /#([^#]+)#.*#([^#]+)#/.exec(hint);
-	// let secondKeyword = twoMatch && twoMatch[2];
+	// Extract keywords between # delimiters (e.g., "#a Hookshot#" -> "a Hookshot")
+	const hashtagMatches = hint.match(/#([^#]+)#/g);
+	const keywords = hashtagMatches
+		? hashtagMatches.map((m) => m.replace(/^#|#$/g, ""))
+		: [];
 
-	const mapArray: [string, { meanings: string[]; type: string }][] = [];
-	hintsMap.forEach((v, k) => {
-		mapArray.push([k, v]);
-	});
-	const matches = mapArray.filter(([k]) => hint.includes(k));
+	const matches = keywords
+		.map((keyword) => {
+			const entry = hintsMap.get(keyword);
+			if (entry) return [keyword, entry] as [string, typeof entry];
+			return null;
+		})
+		.filter((entry): entry is [string, { meanings: string[]; type: string }] => entry !== null);
 
 	const locations = matches.filter(([_, v]) => v.type === "location");
 	const location =

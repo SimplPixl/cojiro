@@ -1,42 +1,30 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import parseSeed, { ParsedSeed } from "~/utils/parseSeed";
-import createSeed from "~/server/external/createSeed";
-import getSpoiler from "~/server/external/getSpoiler";
+import parseSeed, { ParsedSeed, SeedReturnType } from "~/utils/parseSeed";
 import parseHint from "~/utils/parseHint";
 import regions from "~/utils/regions";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import settingsPresets from "~/server/external/apiSettingPresets";
 
 export const playthroughRouter = createTRPCRouter({
-	submitSeedGen: publicProcedure
+	uploadSpoilerLog: publicProcedure
 		.input(
 			z.object({
-				seed: z.string().optional(),
-				settingsPreset: z.string(),
+				spoilerLog: z.string(),
 			})
 		)
-		.mutation(async ({ input }) => {
-			return await createSeed({
-				seed: input.seed,
-				settingsPreset: input.settingsPreset as keyof typeof settingsPresets,
-			});
-		}),
-	startPlaythrough: publicProcedure
-		.input(z.object({ id: z.number() }))
 		.mutation(async ({ ctx, input }) => {
+			let apiSeed: SeedReturnType;
+			try {
+				apiSeed = JSON.parse(input.spoilerLog) as SeedReturnType;
+			} catch {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Invalid JSON format",
+				});
+			}
+
 			let startingItems: string[] = [];
 
-			const apiSeed = await getSpoiler({
-				id: input.id,
-			});
-			if (apiSeed === "Waiting") {
-				return {
-					status: 204,
-					id: "",
-				};
-			}
-			console.log("apiSeed", apiSeed);
 			const seed = parseSeed(apiSeed);
 			startingItems = Object.keys(
 				apiSeed.settings.starting_items

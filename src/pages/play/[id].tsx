@@ -7,7 +7,7 @@ import Layout from "~/components/Layout";
 import { useRouter } from "next/router";
 import { useSetAtom, useAtomValue, useAtom } from "jotai";
 import { idAtom, errorTextAtom, winScreenOpenAtom } from "~/utils/atoms";
-import { usePlaythrough, useDownloadLog, useCheckLocation } from "~/utils/api";
+import { usePlaythrough, useDownloadLog } from "~/utils/api";
 import SongTracker from "~/components/SongTracker";
 import ErrorBox from "~/components/ErrorBox";
 
@@ -100,25 +100,10 @@ const Cojiro = () => {
 	const setErrorText = useSetAtom(errorTextAtom);
 	const { data: playthrough, isLoading } = usePlaythrough(id as string);
 	const downloadLog = useDownloadLog(id as string);
-	const { mutate: checkLocation, isLoading: checkIsLoading } = useCheckLocation(
-		id as string
-	);
 
 	useEffect(() => {
 		setErrorText("");
 	}, [id, setErrorText]);
-
-	useEffect(() => {
-		if (
-			id &&
-			playthrough &&
-			!isLoading &&
-			!checkIsLoading &&
-			!playthrough.checked.includes("Links Pocket")
-		) {
-			checkLocation("Links Pocket");
-		}
-	}, [id, isLoading, checkIsLoading, checkLocation, playthrough]);
 
 	if (!id || !playthrough || isLoading) {
 		if (isLoading) {
