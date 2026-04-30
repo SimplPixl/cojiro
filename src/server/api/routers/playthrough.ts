@@ -86,7 +86,8 @@ export const playthroughRouter = createTRPCRouter({
 					});
 				}
 			}
-			const seed = playthrough.seed as unknown as ParsedSeed;
+			const rawSeed = playthrough.seed as unknown as SeedReturnType;
+			const seed = parseSeed(rawSeed);
 			if (!seed) {
 				throw new TRPCError({
 					code: "INTERNAL_SERVER_ERROR",
@@ -135,7 +136,8 @@ export const playthroughRouter = createTRPCRouter({
 					});
 				}
 			}
-			const seed = playthrough.seed as unknown as ParsedSeed;
+			const rawSeed = playthrough.seed as unknown as SeedReturnType;
+			const seed = parseSeed(rawSeed);
 			if (!seed) {
 				throw new TRPCError({
 					code: "INTERNAL_SERVER_ERROR",
@@ -178,7 +180,8 @@ export const playthroughRouter = createTRPCRouter({
 					});
 				}
 			}
-			const seed = playthrough.seed as unknown as ParsedSeed;
+			const rawSeed = playthrough.seed as unknown as SeedReturnType;
+			const seed = parseSeed(rawSeed);
 			if (!seed) {
 				throw new TRPCError({
 					code: "INTERNAL_SERVER_ERROR",
@@ -315,7 +318,8 @@ export const playthroughRouter = createTRPCRouter({
 						});
 					}
 				}
-				const seed = playthrough.seed as unknown as ParsedSeed;
+				const rawSeed = playthrough.seed as unknown as SeedReturnType;
+				const seed = parseSeed(rawSeed);
 				if (!seed) {
 					throw new TRPCError({
 						code: "INTERNAL_SERVER_ERROR",
@@ -447,7 +451,8 @@ export const playthroughRouter = createTRPCRouter({
 					});
 				}
 			}
-			const seed = playthrough.seed as unknown as ParsedSeed;
+			const rawSeed = playthrough.seed as unknown as SeedReturnType;
+			const seed = parseSeed(rawSeed);
 			if (!seed) {
 				throw new TRPCError({
 					code: "INTERNAL_SERVER_ERROR",
@@ -576,5 +581,36 @@ export const playthroughRouter = createTRPCRouter({
 			return {
 				log: playthrough.seed.rawLog,
 			};
+		}),
+
+	destroyPlaythrough: publicProcedure
+		.input(
+			z.object({
+				id: z.string().cuid(),
+			})
+		)
+		.mutation(async ({ ctx, input }) => {
+			const playthrough = await ctx.db.playthrough.findUnique({
+				where: { id: input.id },
+				include: { user: true },
+			});
+			if (!playthrough) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Playthrough for ID not found",
+				});
+			}
+			if (playthrough.user) {
+				if (!ctx.session?.user || ctx.session.user.id !== playthrough.userId) {
+					throw new TRPCError({
+						code: "FORBIDDEN",
+						message:
+							"You are not authenticated as the owner of this playthrough",
+					});
+				}
+			}
+			await ctx.db.playthrough.delete({
+				where: { id: input.id },
+			});
 		}),
 });

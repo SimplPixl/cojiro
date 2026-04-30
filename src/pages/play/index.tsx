@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ErrorBox from "~/components/ErrorBox";
-import { api } from "~/utils/api";
+import { api, useDestroyPlaythrough } from "~/utils/api";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { useAtom } from "jotai";
@@ -8,7 +8,6 @@ import { useSetAtom } from "jotai";
 import { ageAtom, regionAtom, errorTextAtom } from "~/utils/atoms";
 import Layout from "~/components/Layout";
 import { useSession } from "next-auth/react";
-import { MdWarningAmber } from "react-icons/md";
 import { formatFilename } from "~/utils/filename";
 import Image from "next/image";
 
@@ -17,16 +16,46 @@ interface UploadResponse {
   token?: string;
 }
 
+const PlaythroughCardWithDestroy = ({
+	playthrough,
+}: {
+	playthrough: {
+		id: string;
+		medallions: string[];
+		startTime: Date;
+		checked: number;
+		locations: number;
+	};
+}) => {
+	const destroyPlaythrough = useDestroyPlaythrough(playthrough.id);
+
+	return (
+		<Link href={`/play/${playthrough.id}`}>
+			<li>
+				<InProgressPlaythroughCard
+					medallions={playthrough.medallions}
+					startTime={playthrough.startTime}
+					checked={playthrough.checked}
+					locations={playthrough.locations}
+					onDestroy={destroyPlaythrough}
+				/>
+			</li>
+		</Link>
+	);
+};
+
 const InProgressPlaythroughCard = ({
 	medallions,
 	startTime,
 	checked,
 	locations,
+	onDestroy,
 }: {
 	medallions: string[];
 	startTime: Date;
 	checked: number;
 	locations: number;
+	onDestroy: () => void;
 }) => {
 	const seconds = (Date.now() - startTime.getTime()) / 1000;
 	const rtf = new Intl.RelativeTimeFormat();
@@ -45,8 +74,19 @@ const InProgressPlaythroughCard = ({
 			? rtf.format(-seconds / 60 / 60 / 24 / 30, "month")
 			: rtf.format(-seconds / 60 / 60 / 24 / 365, "year");
 	return (
-		<div className="w-40 cursor-pointer rounded-lg border shadow-md">
+		<div className="w-32 cursor-pointer rounded-lg border shadow-md sm:w-40">
 			<div className="flex relative">
+				<button
+					className="absolute top-1 right-1 z-10 text-red-600 text-xl font-bold hover:text-red-800 transition-colors"
+					onClick={(e) => {
+						e.preventDefault();
+						e.stopPropagation();
+						onDestroy();
+					}}
+					aria-label="Exit game"
+				>
+					×
+				</button>
 				{medallions.map((el) => (
 					<Image
 						objectFit="contain"
@@ -94,7 +134,9 @@ const StartForm = () => {
 		}
 	);
 
-	const userPlaythroughs = api.user.getPlaythroughs.useQuery();
+	const userPlaythroughs = api.user.getPlaythroughs.useQuery(undefined, {
+		enabled: status === "authenticated",
+	});
 
 	useEffect(() => {
 		setJwt(localStorage.getItem("playthroughsJwt"));
@@ -152,18 +194,11 @@ const StartForm = () => {
 
 	return (
 		<Layout>
-			<div className="grid h-full place-items-center bg-[url('/images/bg/hyrule-field-mountain.png')] bg-cover bg-center">
-				<div className="grid place-items-center gap-4 rounded-lg bg-gray-300 bg-opacity-50 p-8 backdrop-blur-md">
-					{status === "unauthenticated" && (
-						<div className="flex w-[65ch] items-center justify-center gap-1 rounded-lg bg-amber-200 p-2">
-							<MdWarningAmber className="w-8" />
-							You are not signed in. You may play as a guest, but the game will
-							be deleted after 3 days, will not be tracked for stats, and can be
-							claimed by anyone with the URL.
-						</div>
-					)}
+			<section className="relative flex min-h-[calc(100vh-5rem)] items-center justify-center overflow-hidden bg-gradient-to-br from-emerald-900 via-teal-800 to-green-900 px-4 text-center sm:min-h-[calc(100vh-5rem)]">
+				<div className="absolute inset-0 bg-[url('/images/bg/hyrule-field-mountain.png')] bg-cover bg-fixed bg-center opacity-20 mix-blend-overlay" />
+				<div className="relative z-10 grid mx-[15vw] max-w-[90vw] place-items-center gap-4 rounded-lg bg-gray-300 bg-opacity-50 p-6 backdrop-blur-md sm:mx-0 sm:max-w-none sm:p-8">
 					<h2 className="text-2xl font-semibold">Upload Spoiler Log</h2>
-					<p className="w-[65ch] text-center text-sm text-gray-700">
+					<p className="max-w-[65ch] text-center text-sm text-gray-700">
 						Generate a seed at{" "}
 						<a
 							href="https://ootrandomizer.com/"
@@ -197,21 +232,15 @@ const StartForm = () => {
 							<span>None!</span>
 						) : (
 							inProgressPlaythroughs.map((el) => (
-								<Link key={el.id} href={`/play/${el.id}`}>
-									<li>
-										<InProgressPlaythroughCard
-											medallions={el.medallions}
-											startTime={el.startTime}
-											checked={el.checked}
-											locations={el.locations}
-										/>
-									</li>
-								</Link>
+								<PlaythroughCardWithDestroy
+									key={el.id}
+									playthrough={el}
+								/>
 							))
 						)}
 					</ul>
 				</div>
-			</div>
+			</section>
 		</Layout>
 	);
 };

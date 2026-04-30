@@ -300,6 +300,33 @@ export const useDownloadLog = (id: string) => {
 				}
 			});
 };
+
+export const useDestroyPlaythrough = (id: string) => {
+	const setErrorText = useSetAtom(errorTextAtom);
+	const utils = api.useUtils();
+
+	const mutation = api.playthrough.destroyPlaythrough.useMutation({
+		onSuccess: () => {
+			const jwts = localStorage.getItem("playthroughsJwt");
+			if (jwts) {
+				try {
+					const parsed = JSON.parse(jwts) as Record<string, string>;
+					delete parsed[id];
+					localStorage.setItem("playthroughsJwt", JSON.stringify(parsed));
+				} catch {
+				}
+			}
+			void utils.jwt.getPlaythroughs.invalidate();
+			void utils.user.getPlaythroughs.invalidate();
+			setErrorText("");
+		},
+		onError: (err) => {
+			setErrorText(err.message);
+		},
+	});
+
+	return () => mutation.mutate({ id });
+};
 /**
  * Inference helper for inputs.
  *
