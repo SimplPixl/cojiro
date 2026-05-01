@@ -87,10 +87,28 @@ const RegionList = () => {
 		"Thieves Hideout",
 	]);
 
+	// Helper to get background class based on region type
+	const getRegionBgClass = (regionName: string) => {
+		const grassRegions = ["Hyrule Field", "Kokiri Forest", "Lon Lon Ranch", "Sacred Forest Meadow", "Lost Woods"];
+		const stoneRegions = ["Kakariko Village", "Hyrule Castle", "Temple of Time", "Market"];
+		const fireRegions = ["Death Mountain Crater", "Death Mountain Trail", "Goron City"];
+		const waterRegions = ["Zora's River", "Zora's Domain", "Zora's Fountain", "Lake Hylia"];
+		const sandRegions = ["Desert Colossus", "Gerudo Valley"];
+		const dungeonRegions = ["Deku Tree", "Dodongos Cavern", "Jabu Jabus Belly", "Forest Temple", "Fire Temple", "Water Temple", "Shadow Temple", "Spirit Temple", "Bottom of the Well", "Gerudo Training Ground", "Thieves Hideout", "Ganon's Castle"];
+		
+		if (grassRegions.includes(regionName)) return "bg-grass";
+		if (stoneRegions.includes(regionName)) return "bg-stone";
+		if (fireRegions.includes(regionName)) return "bg-fire";
+		if (waterRegions.includes(regionName)) return "bg-water";
+		if (sandRegions.includes(regionName)) return "bg-sand";
+		if (dungeonRegions.includes(regionName)) return "bg-dungeon";
+		return "bg-dark";
+	};
+
 	return (
 		<>
 			<div
-				className="flex cursor-pointer items-center justify-center gap-2 bg-black py-1 text-center text-2xl font-bold text-white lg:cursor-default"
+				className="sticky top-0 z-20 flex cursor-pointer items-center justify-center gap-2 bg-black px-4 py-3 text-center text-lg font-bold text-white shadow-md lg:cursor-default"
 				onClick={() => setCollapsed((prev) => !prev)}
 			>
 				<span>{age === "child" ? "Child" : "Adult"} Link</span>
@@ -98,92 +116,85 @@ const RegionList = () => {
 					{collapsed ? <FiChevronDown /> : <FiChevronUp />}
 				</button>
 			</div>
-			<div
-				className={`auto-cols-auto grid-cols-2 bg-black sm:grid-cols-3 lg:grid-cols-1 ${
-					collapsed ? "hidden" : "grid"
-				} lg:grid`}
+			<nav
+				className={`flex-1 flex-col bg-stone-900 ${
+					collapsed ? "hidden" : "flex"
+				} lg:flex`}
 			>
 				{Object.keys(regions)
 					.filter((el) => regions[el]![age])
 					.map((el) => (
 						<div
 							key={el}
-							className={`border-2 border-black bg-cover bg-center text-white transition lg:h-auto lg:w-full lg:justify-end ${
+							className={`flex cursor-pointer items-center justify-end gap-2 border-b border-stone-800 px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-surface-variant ${
 								el === region
-									? "z-20 scale-110 bg-zinc-500 font-bold lg:translate-x-4"
-									: "cursor-pointer bg-zinc-700 font-semibold hover:z-10 hover:scale-105 hover:bg-zinc-600 active:bg-zinc-800 hover:lg:translate-x-2 hover:lg:scale-100"
-							} lg:scale-100`}
+									? "border-l-4 border-l-primary bg-surface-variant text-black"
+									: "border-l-4 border-l-transparent"
+							} ${getRegionBgClass(regions[el]!.name)}`}
 							onClick={() => setRegion(el)}
 							style={{
-								backgroundImage: `url('/images/bg/${formatFilename(el)}.png')`,
 								textShadow:
-									"-2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000",
+									el === region
+										? "none"
+										: "-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000",
 							}}
 						>
-							<div
-								className={`flex h-full w-full items-center gap-2 px-4 py-1 lg:justify-end ${
-									el === region
-										? "bg-zinc-400 bg-opacity-70"
-										: "bg-zinc-800 bg-opacity-60"
-								}`}
-							>
-								{pathRegions.includes(el) && (
-									<Tag text="PATH" color="midnightblue" />
-								)}
-								{playthrough.known_woth.includes(el) && (
-									<Tag text="WOTH" color="darkgreen" />
-								)}
-								{playthrough.known_barren.includes(el) && (
-									<Tag text="FOOL" color="firebrick" />
-								)}
-								<span>{regions[el]!.name}</span>
-								{regionsWithKeys.includes(el) && (
-									<span>
-										<Image
-											width={0}
-											height={0}
-											sizes="100vw"
-											alt="Small Key"
-											className="inline-block h-6 w-auto"
-											src="/images/small-key.png"
-										/>
-										{smallKeyCount(el)}
-									</span>
-								)}
-								{regionsWithBossKeys.includes(el) && (
+							{pathRegions.includes(el) && (
+								<Tag text="PATH" color="midnightblue" />
+							)}
+							{playthrough.known_woth.includes(el) && (
+								<Tag text="WOTH" color="darkgreen" />
+							)}
+							{playthrough.known_barren.includes(el) && (
+								<Tag text="FOOL" color="firebrick" />
+							)}
+							<span className="relative z-10">{regions[el]!.name}</span>
+							{regionsWithKeys.includes(el) && (
+								<span className="relative z-10">
 									<Image
 										width={0}
 										height={0}
 										sizes="100vw"
-										alt="Boss Key"
-										className={`inline-block h-6 w-auto ${
-											playthrough.items.includes(`Boss Key (${el})`)
-												? "opacity-100"
-												: "opacity-30"
-										}`}
-										src="/images/boss-key.png"
+										alt="Small Key"
+										className="inline-block h-5 w-auto"
+										src="/images/small-key.png"
 									/>
-								)}
-								{regionsWithMedallions.includes(el) && (
-									<Image
-										width={0}
-										height={0}
-										sizes="100vw"
-										className="h-6 w-auto"
-										src={`/images/${
-											bosses[el]! in playthrough.known_locations
-												? formatFilename(
-														playthrough.known_locations[bosses[el]!]!
-												  )
-												: "unknown-small"
-										}.png`}
-										alt=""
-									/>
-								)}
-							</div>
+									{smallKeyCount(el)}
+								</span>
+							)}
+							{regionsWithBossKeys.includes(el) && (
+								<Image
+									width={0}
+									height={0}
+									sizes="100vw"
+									alt="Boss Key"
+									className={`inline-block h-5 w-auto ${
+										playthrough.items.includes(`Boss Key (${el})`)
+											? "opacity-100"
+											: "opacity-30"
+									}`}
+									src="/images/boss-key.png"
+								/>
+							)}
+							{regionsWithMedallions.includes(el) && (
+								<Image
+									width={0}
+									height={0}
+									sizes="100vw"
+									className="relative z-10 h-5 w-auto"
+									src={`/images/${
+										bosses[el]! in playthrough.known_locations
+											? formatFilename(
+													playthrough.known_locations[bosses[el]!]!
+											  )
+											: "unknown-small"
+									}.png`}
+									alt=""
+								/>
+							)}
 						</div>
 					))}
-			</div>
+			</nav>
 		</>
 	);
 };

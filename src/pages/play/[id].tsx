@@ -3,12 +3,11 @@ import RegionList from "~/components/RegionList";
 import LocationList from "~/components/LocationList";
 import ItemTracker from "~/components/ItemTracker";
 import QuestTracker from "~/components/QuestTracker";
-import Layout from "~/components/Layout";
+import SongTracker from "~/components/SongTracker";
 import { useRouter } from "next/router";
 import { useSetAtom, useAtomValue, useAtom } from "jotai";
 import { idAtom, errorTextAtom, winScreenOpenAtom } from "~/utils/atoms";
 import { usePlaythrough, useDownloadLog } from "~/utils/api";
-import SongTracker from "~/components/SongTracker";
 import ErrorBox from "~/components/ErrorBox";
 
 const Trackers = ({
@@ -95,11 +94,12 @@ const WinScreen = ({
 const Cojiro = () => {
 	const router = useRouter();
 	const { id } = router.query;
+	const playthroughId = Array.isArray(id) ? id[0] : id;
 	const [winScreenOpen, setWinScreenOpen] = useAtom(winScreenOpenAtom);
 	const setId = useSetAtom(idAtom);
 	const setErrorText = useSetAtom(errorTextAtom);
-	const { data: playthrough, isLoading } = usePlaythrough(id as string);
-	const downloadLog = useDownloadLog(id as string);
+	const { data: playthrough, isLoading } = usePlaythrough(playthroughId!);
+	const downloadLog = useDownloadLog(playthroughId!);
 
 	useEffect(() => {
 		setErrorText("");
@@ -112,45 +112,68 @@ const Cojiro = () => {
 			return <div>Unknown error in Cojiro component.</div>;
 		}
 	}
-	setId(id as string);
+	setId(playthroughId!);
 
 	return (
-		<Layout noHeader>
-			<div className="grid min-h-full bg-black">
-				{playthrough.finished && winScreenOpen && (
-					<WinScreen
-						checked={
-							playthrough.checked.filter((el) =>
-								playthrough.locations.includes(el)
-							).length
-						}
-						locations={playthrough.locations.length}
-						createdAt={playthrough.createdAt}
-						finishedAt={playthrough.finishedAt}
-						closeWinScreen={() => setWinScreenOpen(false)}
-						downloadLog={() => void downloadLog()}
-					/>
-				)}
-				<div
-					className="col-start-1 row-start-1 flex flex-col lg:flex-row"
-					style={{ imageRendering: "crisp-edges" }}
-				>
-					<div className="z-10 w-full flex-shrink-0 border-b-2 lg:w-80 lg:border-r-2 lg:border-b-0">
-						<RegionList />
-					</div>
-					<div className="flex flex-grow flex-col 2xl:flex-row">
-						<div className="relative h-full flex-grow basis-0 lg:col-span-2 xl:col-span-1 xl:row-span-2">
-							<LocationList />
-						</div>
-
+		<div className="flex h-screen flex-col bg-background">
+			{/* Header */}
+			<header className="bg-stone-950/80 backdrop-blur-md font-serif font-bold tracking-widest uppercase border-stone-800 border-b-[1px] shadow-[0_4px_20px_rgba(0,0,0,0.5)] flex justify-between items-center px-6 h-16 w-full z-50 shrink-0">
+				<div className="flex items-center gap-4">
+					<span className="text-2xl font-black text-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)] font-h2 text-h2">
+						Hyrule Tracker
+					</span>
+				</div>
+				<nav className="flex items-center gap-6">
+					<a
+						className="text-stone-400 hover:bg-stone-800/50 hover:text-yellow-200 transition-all px-4 py-2 rounded font-label-caps text-label-caps flex items-center gap-2 border border-outline-variant"
+						href={`//github.com/christianlegge/cojiro/issues/new?body=**Describe issue here**%0APlease be as specific as possible!%0A%0A---- DO NOT EDIT BELOW THIS LINE ----%0APlaythrough id: ${playthroughId}`}
+						target="_blank"
+						rel="noreferrer"
+					>
+						<span className="material-symbols-outlined text-[16px]">chat</span>
+						Feedback
+					</a>
+				</nav>
+			</header>
+			{/* Main content */}
+			<div
+				className="flex flex-1 overflow-hidden"
+				style={{ imageRendering: "crisp-edges" }}
+			>
+				{/* Left Sidebar */}
+				<aside className="bg-black font-serif tracking-tight h-full w-64 border-r border-stone-800 flex flex-col overflow-y-auto shrink-0 hidden md:flex">
+					<RegionList />
+				</aside>
+				{/* Center Column (Map) */}
+				<main className="flex-1 flex flex-col relative overflow-hidden bg-surface-container-lowest">
+					<LocationList />
+				</main>
+				{/* Right Sidebar (Inventory Grid) */}
+				<aside className="w-[320px] lg:w-[380px] bg-surface-container-high border-l border-outline-variant/30 flex flex-col shrink-0 z-20 shadow-[-10px_0_30px_rgba(0,0,0,0.5)] relative overflow-hidden">
+					<div className="absolute inset-0 w-full h-full bg-no-repeat bg-right bg-cover opacity-20" style={{ backgroundImage: "url('/images/bg/playing-hyrule-field.png.png')" }} />
+					<div className="relative z-10 p-4 overflow-y-auto">
 						<Trackers
 							items={playthrough.items}
 							knownLocations={playthrough.known_locations}
 						/>
 					</div>
-				</div>
+				</aside>
 			</div>
-		</Layout>
+			{playthrough.finished && winScreenOpen && (
+				<WinScreen
+					checked={
+						playthrough.checked.filter((el) =>
+							playthrough.locations.includes(el)
+						).length
+					}
+					locations={playthrough.locations.length}
+					createdAt={playthrough.createdAt}
+					finishedAt={playthrough.finishedAt}
+					closeWinScreen={() => setWinScreenOpen(false)}
+					downloadLog={() => void downloadLog()}
+				/>
+			)}
+		</div>
 	);
 };
 

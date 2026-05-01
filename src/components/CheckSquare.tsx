@@ -61,17 +61,17 @@ const CheckSquare = ({
 					{item ? `${displayName} (${item})` : displayName}
 				</span>
 			}
-			className={`absolute ${
-				bigChecks.includes(check) ? "h-20 w-20" : "h-8 w-8 lg:h-12 lg:w-12"
-			} -translate-x-1/2 -translate-y-1/2`}
+			className={`map-marker absolute z-20 ${
+				bigChecks.includes(check) ? "h-20 w-20" : "h-10 w-10 lg:h-12 lg:w-12"
+			} -translate-x-1/2 -translate-y-1/2 transition-transform hover:scale-110`}
 			style={{ ...coords }}
 			showInfoIcon={item !== undefined}
 		>
 			<div
-				className={`h-full w-full bg-contain bg-center bg-no-repeat ${
+				className={`flex h-full w-full items-center justify-center rounded-full ${
 					checked
-						? "cursor-default" // bg-zinc-500"
-						: "cursor-pointer" // bg-lime-500"
+						? "cursor-default opacity-50"
+						: "cursor-pointer bg-tertiary-container border-2 border-tertiary shadow-[0_0_15px_rgba(234,195,74,0.6)]"
 				}`}
 				onClick={() => {
 					if (checked) {
@@ -95,26 +95,14 @@ const CheckSquare = ({
 						}
 					}
 				}}
-				// style={{
-				// 	backgroundImage: `url(${
-				// 		check.includes("GS")
-				// 			? "/images/skulltula.png"
-				// 			: check.includes("Freestanding PoH")
-				// 			? "/images/heartpiecemodel.png"
-				// 			: "/images/chest.png"
-				// 	})`,
-				// }}
 			>
 				{type === "entrances" ? (
 					<ImEnter
-						className="h-full w-full text-black"
+						className="h-full w-full text-primary drop-shadow-[0_0_8px_rgba(181,205,175,0.8)]"
 						style={
 							checked
-								? { opacity: 0.7 }
-								: {
-										filter:
-											"drop-shadow(0px 0px 8px white) drop-shadow(0px 0px 8px white)",
-								  }
+								? { opacity: 0.5 }
+								: undefined
 						}
 					/>
 				) : (
@@ -141,11 +129,8 @@ const CheckSquare = ({
 						alt={check}
 						style={
 							checked
-								? { opacity: 0.7 }
-								: {
-										filter:
-											"drop-shadow(0px 0px 8px white) drop-shadow(0px 0px 8px white)",
-								  }
+								? { opacity: 0.5 }
+								: undefined
 						}
 					/>
 				)}

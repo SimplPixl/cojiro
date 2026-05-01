@@ -31,6 +31,8 @@ function locationDisplayName(name: string, region: string): string {
 	}
 }
 
+const checkTypes = ["locations", "gossip_stones", "entrances"] as const;
+
 const LocationList = () => {
 	const id = useAtomValue(idAtom);
 	const { data: playthrough, error, status } = usePlaythrough(id);
@@ -66,46 +68,12 @@ const LocationList = () => {
 	if (!(region in regions)) {
 		return <div>Error! region not set correctly</div>;
 	}
+	
 	return (
-		<div className="flex h-full flex-col bg-black text-white">
-			<div className="min-h-16 sticky top-0 z-40 flex items-center justify-between gap-8 bg-gradient-to-b from-black to-zinc-700 px-4 py-2">
-				<div className="flex h-full flex-col justify-center">
-					<span className="w-max flex-shrink-0 text-2xl font-bold">
-						{region}
-					</span>
-					{pathTo && (
-						<span className="w-max max-w-[20rem]">
-							{`Path to: ${pathTo
-								.filter((el, idx, arr) => arr.indexOf(el) === idx)
-								.join(", ")}
-							`}
-						</span>
-					)}
-					{playthrough.known_woth.includes(region) && (
-						<span className="w-max max-w-[20rem]">Way of the Hero</span>
-					)}
-					{playthrough.known_barren.includes(region) && (
-						<span className="w-max max-w-[20rem]">Foolish Choice</span>
-					)}
-				</div>
-				{fetching ? (
-					<span className="h-full animate-spin">.</span>
-				) : errorText ? (
-					<ErrorBox error={errorText} />
-				) : (
-					<span className="text-lg">{headerText}</span>
-				)}
-				<a
-					className="z-50 flex items-center gap-1 rounded-md border-2 border-red-600 bg-red-200 px-2 py-0 text-lg text-black hover:bg-red-100 active:bg-red-300"
-					href={`//github.com/christianlegge/cojiro/issues/new?body=**Describe issue here**%0APlease be as specific as possible!%0A%0A---- DO NOT EDIT BELOW THIS LINE ----%0APlaythrough id: ${id}`}
-					target="_blank"
-					rel="noreferrer"
-				>
-					<span>Feedback</span>
-					<FiExternalLink style={{ display: "inline" }} />
-				</a>
-			</div>
-			<div className="flex h-full w-full items-center justify-center py-8">
+		<div className="relative flex h-full flex-col bg-surface-container-lowest text-on-surface">
+			{/* Map with overlay */}
+			<div className="relative flex-1 overflow-hidden flex items-center justify-center p-6">
+				{/* Wrapper that maintains image aspect ratio */}
 				<div className="relative w-full">
 					<Image
 						width={0}
@@ -113,24 +81,21 @@ const LocationList = () => {
 						sizes="100vw"
 						src={`/images/maps/${formatFilename(region)}.jpg`}
 						alt=""
-						className="mx-auto h-full w-full object-contain"
+						className="mx-auto h-full w-full object-contain opacity-80"
 					/>
-					{(
-						["locations", "gossip_stones", "entrances"] as (
-							| "locations"
-							| "gossip_stones"
-							| "entrances"
-						)[]
-					).flatMap((checkType) =>
+					<div className="absolute inset-0 bg-background/20 mix-blend-multiply" />
+					
+					{/* Map markers - positioned INSIDE the image wrapper so they align with the image */}
+					{checkTypes.flatMap((checkType) =>
 						Object.keys(regions[region]![checkType])
 							.filter(
 								(el) =>
 									regions[region]![checkType][el]![age] &&
-									(regions[region]![checkType][el]!.always! ||
-										checkType === "gossip_stones" ||
-										checkType === "entrances" ||
-										playthrough.locations.includes(el) ||
-										el.includes("GS"))
+										(regions[region]![checkType][el]!.always! ||
+											checkType === "gossip_stones" ||
+											checkType === "entrances" ||
+											playthrough.locations.includes(el) ||
+											el.includes("GS"))
 							)
 							.map((el) => (
 								<CheckSquare
@@ -150,12 +115,50 @@ const LocationList = () => {
 									item={
 										checkType === "locations"
 											? playthrough.known_locations[el] ??
-											  (freestandingItems ? freestandingItems[el] : undefined)
+													  (freestandingItems ? freestandingItems[el] : undefined)
 											: undefined
 									}
 								/>
 							))
 					)}
+				</div>
+				
+				{/* Floating overlay elements - separate layer on top, lower z-index than markers */}
+				<div className="absolute inset-0 z-10 flex flex-col pointer-events-none p-6">
+					{/* Top: Region name + stats + zoom controls */}
+					<div className="flex justify-between items-start">
+						<div className="glass-panel p-4 rounded-lg pointer-events-auto">
+							<h1 className="font-h1 text-h1 text-primary drop-shadow-md">{region}</h1>
+							<div className="flex items-center gap-4 mt-2">
+								<div className="flex items-center gap-1 text-tertiary">
+									<span className="material-symbols-outlined fill text-[16px]">star</span>
+									<span className="font-stat-num text-stat-num">3/3</span>
+								</div>
+								<div className="flex items-center gap-1 text-on-surface-variant">
+									<span className="material-symbols-outlined text-[16px]">favorite</span>
+									<span className="font-stat-num text-stat-num">1/2</span>
+								</div>
+							</div>
+						</div>
+						<div className="glass-panel p-2 flex gap-2 rounded-lg pointer-events-auto">
+							<button className="w-10 h-10 flex items-center justify-center rounded bg-surface-container-high text-on-surface hover:bg-surface-variant transition-colors border border-outline-variant">
+								<span className="material-symbols-outlined">zoom_in</span>
+							</button>
+							<button className="w-10 h-10 flex items-center justify-center rounded bg-surface-container-high text-on-surface hover:bg-surface-variant transition-colors border border-outline-variant">
+								<span className="material-symbols-outlined">zoom_out</span>
+							</button>
+						</div>
+					</div>					
+					{/* Bottom: Progress bar */}
+					<div className="mt-auto flex justify-center">
+						<div className="glass-panel px-6 py-3 rounded-full flex items-center gap-4 pointer-events-auto">
+							<span className="font-label-caps text-label-caps text-on-surface-variant">Area Progress</span>
+							<div className="w-48 h-[4px] bg-surface-variant rounded-full overflow-hidden">
+								<div className="h-full progress-gradient w-2/3"></div>
+							</div>
+							<span className="font-stat-num text-stat-num text-tertiary">66%</span>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

@@ -26,3 +26,66 @@
 		transform: translateY(0);
 	}
 }
+
+/* Glassmorphism utility */
+.glass-panel {
+	background: rgba(42, 42, 42, 0.2);
+	backdrop-filter: blur(16px);
+	-webkit-backdrop-filter: blur(16px);
+	border: 1px solid rgba(141, 146, 138, 0.25);
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Glow effects */
+.magical-glow {
+	box-shadow: inset 0 0 20px rgba(234, 195, 74, 0.15);
+	border-color: #eac34a;
+}
+
+.active-glow {
+	box-shadow: 0 0 20px rgba(181, 205, 175, 0.4);
+}
+
+.progress-gradient {
+	background: linear-gradient(90deg, #b5cdaf 0%, #eac34a 100%);
+}
+
+/* Map marker transitions */
+.map-marker {
+	transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.map-marker:hover {
+	transform: scale(1.1);
+}
+
+/* Custom scrollbar for sidebar */
+aside::-webkit-scrollbar {
+	width: 4px;
+}
+
+aside::-webkit-scrollbar-track {
+	background: #1c1b1b;
+}
+
+aside::-webkit-scrollbar-thumb {
+	background: #8d928a;
+	border-radius: 2px;
+}
+
+.material-symbols-outlined {
+	font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.material-symbols-outlined.fill {
+	font-variation-settings: 'FILL' 1;
+}
+
+/* Area type backgrounds for sidebar */
+.bg-grass { background: linear-gradient(to right, #2a3a2a, #2a2a2a); }
+.bg-stone { background: linear-gradient(to right, #3a3a3a, #2a2a2a); }
+.bg-fire { background: linear-gradient(to right, #4a2a2a, #2a2a2a); }
+.bg-water { background: linear-gradient(to right, #2a3a4a, #2a2a2a); }
+.bg-sand { background: linear-gradient(to right, #4a4a2a, #2a2a2a); }
+.bg-dark { background: linear-gradient(to right, #1a1a1a, #2a2a2a); }
+.bg-dungeon { background: linear-gradient(to right, #3a2a2a, #2a2a2a); }
