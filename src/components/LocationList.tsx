@@ -73,19 +73,25 @@ const LocationList = () => {
 	const selectedCheckData = useAtomValue(selectedCheckAtom);
 	
 	const selectedCheckDisplay = selectedCheckData ? (() => {
-		const { name, checkId, item: initialItem } = selectedCheckData;
+		const { name, checkId } = selectedCheckData;
 		
-		// The item should be available from initialItem or known_locations
-		// If neither works, this is a bug - but we should NOT show "Checking..."
-		const item = initialItem ?? playthrough.known_locations[checkId];
+		// First try known_locations
+		let item = playthrough.known_locations[checkId];
 		
-		// If still undefined, something is wrong with the data
-		if (!item) {
-			console.warn(`Item not found for checkId: ${checkId}`);
-			console.warn('known_locations keys:', Object.keys(playthrough.known_locations).slice(0, 10));
+		// If not found but headerText contains this check, parse the item from headerText
+		if (!item && headerText && headerText.startsWith(checkId + ': ')) {
+			item = headerText.slice(checkId.length + 2); // Remove "checkId: " prefix
 		}
 		
-		return { name, item: item ?? "Item not found" };
+		// If still not found but check is in checked list, try known_locations again
+		if (!item && playthrough.checked.includes(checkId)) {
+			item = playthrough.known_locations[checkId];
+		}
+		
+		return { 
+			name, 
+			item: item ?? "Item not in log" 
+		};
 	})() : null;
 	
 	return (
