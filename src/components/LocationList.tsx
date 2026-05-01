@@ -72,14 +72,13 @@ const LocationList = () => {
 	
 	const selectedCheckData = useAtomValue(selectedCheckAtom);
 	
-	// Derive the item from the selected check
-	const selectedCheckDisplay = selectedCheckData ? (() => {
-		const { name, checkId } = selectedCheckData;
-		const item = playthrough.known_locations[checkId] ?? 
-			(freestandingItems ? freestandingItems[checkId] : undefined) ??
-			"Unknown";
-		return { name, item };
-	})() : null;
+	// Get the last item from the items array (most recently found)
+	const lastItem = playthrough.items.length > 0 ? playthrough.items[playthrough.items.length - 1] : null;
+	
+	const selectedCheckDisplay = selectedCheckData ? {
+		name: selectedCheckData.name,
+		item: lastItem ?? playthrough.known_locations[selectedCheckData.checkId] ?? "Checking..."
+	} : null;
 	
 	return (
 		<div className="relative flex h-full flex-col bg-surface-container-lowest text-on-surface">
@@ -135,14 +134,12 @@ const LocationList = () => {
 					)}
 				</div>
 			
-			{/* CENTER overlay - shows selected check info - positioned in center of map area */}
+			{/* TOP CENTER overlay - shows selected check info */}
 			{selectedCheckDisplay && (
-				<div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
-					<div className="glass-panel px-8 py-6 rounded-2xl text-center pointer-events-auto border-2 border-tertiary/50">
-						<div className="font-h2 text-h2 text-primary mb-2">{selectedCheckDisplay.name}</div>
-						<div className="font-stat-num text-stat-num text-tertiary text-xl">
-							{selectedCheckDisplay.item}
-						</div>
+				<div className="absolute top-6 left-0 right-0 flex justify-center pointer-events-none z-30">
+					<div className="glass-panel px-8 py-4 rounded-2xl text-center pointer-events-auto border-2 border-tertiary/50">
+						<div className="font-h2 text-h2 text-primary mb-1">{selectedCheckDisplay.name}</div>
+						<div className="font-stat-num text-stat-num text-tertiary text-lg">{selectedCheckDisplay.item}</div>
 					</div>
 				</div>
 			)}
