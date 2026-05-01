@@ -75,10 +75,17 @@ const LocationList = () => {
 	const selectedCheckDisplay = selectedCheckData ? (() => {
 		const { name, checkId, item: initialItem } = selectedCheckData;
 		
-		// Use initial item if provided, otherwise look up from known_locations
-		const item = initialItem ?? playthrough.known_locations[checkId] ?? "Checking...";
+		// The item should be available from initialItem or known_locations
+		// If neither works, this is a bug - but we should NOT show "Checking..."
+		const item = initialItem ?? playthrough.known_locations[checkId];
 		
-		return { name, item };
+		// If still undefined, something is wrong with the data
+		if (!item) {
+			console.warn(`Item not found for checkId: ${checkId}`);
+			console.warn('known_locations keys:', Object.keys(playthrough.known_locations).slice(0, 10));
+		}
+		
+		return { name, item: item ?? "Item not found" };
 	})() : null;
 	
 	return (
