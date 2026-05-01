@@ -91,8 +91,8 @@ const CheckSquare = ({
 					beatGanon();
 				} else if (!checked) {
 					if (type === "locations") {
-						// Set selected check with display name and check ID
-						setSelectedCheck({ name: displayName, checkId: check });
+						// Set selected check - include item if available
+						setSelectedCheck({ name: displayName, checkId: check, item });
 						checkLocation(check);
 					} else if (type === "gossip_stones") {
 						checkStone(check);

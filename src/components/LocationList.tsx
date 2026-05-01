@@ -72,13 +72,14 @@ const LocationList = () => {
 	
 	const selectedCheckData = useAtomValue(selectedCheckAtom);
 	
-	// Get the last item from the items array (most recently found)
-	const lastItem = playthrough.items.length > 0 ? playthrough.items[playthrough.items.length - 1] : null;
-	
-	const selectedCheckDisplay = selectedCheckData ? {
-		name: selectedCheckData.name,
-		item: lastItem ?? playthrough.known_locations[selectedCheckData.checkId] ?? "Checking..."
-	} : null;
+	const selectedCheckDisplay = selectedCheckData ? (() => {
+		const { name, checkId, item: initialItem } = selectedCheckData;
+		
+		// Use initial item if provided, otherwise look up from known_locations
+		const item = initialItem ?? playthrough.known_locations[checkId] ?? "Checking...";
+		
+		return { name, item };
+	})() : null;
 	
 	return (
 		<div className="relative flex h-full flex-col bg-surface-container-lowest text-on-surface">
