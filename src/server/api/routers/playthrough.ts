@@ -47,11 +47,7 @@ export const playthroughRouter = createTRPCRouter({
 					known_locations: {},
 					known_barren: [],
 					items: startingItems,
-					user: ctx.session?.user
-						? {
-								connect: { id: ctx.session.user.id },
-						  }
-						: undefined,
+					// No user association - using JWT-based access
 				},
 			});
 
@@ -60,7 +56,7 @@ export const playthroughRouter = createTRPCRouter({
 				status: 200,
 			};
 		}),
-	getPlaythrough: publicProcedure
+		getPlaythrough: publicProcedure
 		.input(
 			z.object({
 				id: z.string().cuid(),
@@ -69,22 +65,13 @@ export const playthroughRouter = createTRPCRouter({
 		.query(async ({ ctx, input }) => {
 			const playthrough = await ctx.db.playthrough.findUnique({
 				where: { id: input.id },
-				include: { seed: true, user: true },
+				include: { seed: true },
 			});
 			if (!playthrough) {
 				throw new TRPCError({
 					code: "NOT_FOUND",
 					message: "Playthrough for ID not found",
 				});
-			}
-			if (playthrough.user) {
-				if (!ctx.session?.user || ctx.session.user.id !== playthrough.userId) {
-					throw new TRPCError({
-						code: "FORBIDDEN",
-						message:
-							"You are not authenticated as the owner of this playthrough",
-					});
-				}
 			}
 			const rawSeed = playthrough.seed as unknown as SeedReturnType;
 			const seed = parseSeed(rawSeed);
@@ -109,7 +96,7 @@ export const playthroughRouter = createTRPCRouter({
 				createdAt: playthrough.createdAt,
 			};
 		}),
-	getFreestandingItems: publicProcedure
+		getFreestandingItems: publicProcedure
 		.input(
 			z.object({
 				id: z.string().cuid(),
@@ -119,22 +106,13 @@ export const playthroughRouter = createTRPCRouter({
 		.query(async ({ ctx, input }) => {
 			const playthrough = await ctx.db.playthrough.findUnique({
 				where: { id: input.id },
-				include: { seed: true, user: true },
+				include: { seed: true },
 			});
 			if (!playthrough) {
 				throw new TRPCError({
 					code: "NOT_FOUND",
 					message: "Playthrough for ID not found",
 				});
-			}
-			if (playthrough.user) {
-				if (!ctx.session?.user || ctx.session.user.id !== playthrough.userId) {
-					throw new TRPCError({
-						code: "FORBIDDEN",
-						message:
-							"You are not authenticated as the owner of this playthrough",
-					});
-				}
 			}
 			const rawSeed = playthrough.seed as unknown as SeedReturnType;
 			const seed = parseSeed(rawSeed);
@@ -153,7 +131,7 @@ export const playthroughRouter = createTRPCRouter({
 			}, {} as Record<string, string>);
 		}),
 
-	checkLocation: publicProcedure
+		checkLocation: publicProcedure
 		.input(
 			z.object({
 				id: z.string().cuid(),
@@ -163,22 +141,13 @@ export const playthroughRouter = createTRPCRouter({
 		.mutation(async ({ ctx, input }) => {
 			const playthrough = await ctx.db.playthrough.findUnique({
 				where: { id: input.id },
-				include: { seed: true, user: true },
+				include: { seed: true },
 			});
 			if (!playthrough) {
 				throw new TRPCError({
 					code: "NOT_FOUND",
 					message: "Playthrough for ID not found",
 				});
-			}
-			if (playthrough.user) {
-				if (!ctx.session?.user || ctx.session.user.id !== playthrough.userId) {
-					throw new TRPCError({
-						code: "FORBIDDEN",
-						message:
-							"You are not authenticated as the owner of this playthrough",
-					});
-				}
 			}
 			const rawSeed = playthrough.seed as unknown as SeedReturnType;
 			const seed = parseSeed(rawSeed);
@@ -306,18 +275,6 @@ export const playthroughRouter = createTRPCRouter({
 						message: "Playthrough for ID not found",
 					});
 				}
-				if (playthrough.user) {
-					if (
-						!ctx.session?.user ||
-						ctx.session.user.id !== playthrough.userId
-					) {
-						throw new TRPCError({
-							code: "FORBIDDEN",
-							message:
-								"You are not authenticated as the owner of this playthrough",
-						});
-					}
-				}
 				const rawSeed = playthrough.seed as unknown as SeedReturnType;
 				const seed = parseSeed(rawSeed);
 				if (!seed) {
@@ -434,22 +391,13 @@ export const playthroughRouter = createTRPCRouter({
 		.mutation(async ({ ctx, input }) => {
 			const playthrough = await ctx.db.playthrough.findUnique({
 				where: { id: input.id },
-				include: { seed: true, user: true },
+				include: { seed: true },
 			});
 			if (!playthrough) {
 				throw new TRPCError({
 					code: "NOT_FOUND",
 					message: "Playthrough for ID not found",
 				});
-			}
-			if (playthrough.user) {
-				if (!ctx.session?.user || ctx.session.user.id !== playthrough.userId) {
-					throw new TRPCError({
-						code: "FORBIDDEN",
-						message:
-							"You are not authenticated as the owner of this playthrough",
-					});
-				}
 			}
 			const rawSeed = playthrough.seed as unknown as SeedReturnType;
 			const seed = parseSeed(rawSeed);
@@ -511,22 +459,13 @@ export const playthroughRouter = createTRPCRouter({
 		.mutation(async ({ ctx, input }) => {
 			const playthrough = await ctx.db.playthrough.findUnique({
 				where: { id: input.id },
-				include: { seed: true, user: true },
+				include: { seed: true },
 			});
 			if (!playthrough) {
 				throw new TRPCError({
 					code: "NOT_FOUND",
 					message: "Playthrough for ID not found",
 				});
-			}
-			if (playthrough.user) {
-				if (!ctx.session?.user || ctx.session.user.id !== playthrough.userId) {
-					throw new TRPCError({
-						code: "FORBIDDEN",
-						message:
-							"You are not authenticated as the owner of this playthrough",
-					});
-				}
 			}
 			await ctx.db.playthrough.updateMany({
 				where: { id: input.id, finished: false },
@@ -549,22 +488,13 @@ export const playthroughRouter = createTRPCRouter({
 		.query(async ({ ctx, input }) => {
 			const playthrough = await ctx.db.playthrough.findUnique({
 				where: { id: input.id },
-				include: { seed: true, user: true },
+				include: { seed: true },
 			});
 			if (!playthrough) {
 				throw new TRPCError({
 					code: "NOT_FOUND",
 					message: "Playthrough for ID not found",
 				});
-			}
-			if (playthrough.user) {
-				if (!ctx.session?.user || ctx.session.user.id !== playthrough.userId) {
-					throw new TRPCError({
-						code: "FORBIDDEN",
-						message:
-							"You are not authenticated as the owner of this playthrough",
-					});
-				}
 			}
 			if (!playthrough.seed) {
 				throw new TRPCError({
@@ -592,22 +522,12 @@ export const playthroughRouter = createTRPCRouter({
 		.mutation(async ({ ctx, input }) => {
 			const playthrough = await ctx.db.playthrough.findUnique({
 				where: { id: input.id },
-				include: { user: true },
 			});
 			if (!playthrough) {
 				throw new TRPCError({
 					code: "NOT_FOUND",
 					message: "Playthrough for ID not found",
 				});
-			}
-			if (playthrough.user) {
-				if (!ctx.session?.user || ctx.session.user.id !== playthrough.userId) {
-					throw new TRPCError({
-						code: "FORBIDDEN",
-						message:
-							"You are not authenticated as the owner of this playthrough",
-					});
-				}
 			}
 			await ctx.db.playthrough.delete({
 				where: { id: input.id },

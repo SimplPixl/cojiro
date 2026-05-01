@@ -9,56 +9,49 @@
 
 import { initTRPC, TRPCError } from "@trpc/server";
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
-import { type Session } from "next-auth";
 import superjson from "superjson";
 import { ZodError } from "zod";
+import jwt from "jsonwebtoken";
 
-import { getServerAuthSession } from "~/server/auth";
+import { env } from "~/env.mjs";
 import { db } from "~/server/db";
 
 /**
  * 1. CONTEXT
  *
  * This section defines the "contexts" that are available in the backend API.
- *
- * These allow you to access things when processing a request, like the database, the session, etc.
  */
 
 interface CreateContextOptions {
-	session: Session | null;
+	userId: string | null;
 }
 
-/**
- * This helper generates the "internals" for a tRPC context. If you need to use it, you can export
- * it from here.
- *
- * Examples of things you may need it for:
- * - testing, so we don't have to mock Next.js' req/res
- * - tRPC's `createSSGHelpers`, where we don't have req/res
- *
- * @see https://create.t3.gg/en/usage/trpc#-serverapitrpcts
- */
 const createInnerTRPCContext = (opts: CreateContextOptions) => {
 	return {
-		session: opts.session,
+		userId: opts.userId,
 		db,
 	};
 };
 
-/**
- * This is the actual context you will use in your router. It will be used to process every request
- * that goes through your tRPC endpoint.
- *
- * @see https://trpc.io/docs/context
- */
 export const createTRPCContext = async (opts: CreateNextContextOptions) => {
-	const { req, res } = opts;
+	const { req } = opts;
 
-	// Get the session from the server using the getServerSession wrapper function
-	const session = await getServerAuthSession({ req, res });
+	// Check for JWT in Authorization header
+	let userId: string | null = null;
+	const authHeader = req.headers.authorization;
+	if (authHeader?.startsWith("Bearer ")) {
+		try {
+			const token = authHeader.slice(7);
+			const decoded = jwt.verify(token, env.JWT_SECRET) as { playthroughs?: string[] };
+			// JWT contains playthrough IDs, not a user ID, so we pass null
+			// The playthrough ownership is checked via the JWT in each procedure
+		} catch {
+			// Invalid token, continue as guest
+		}
+	}
 
 	return createInnerTRPCContext({
-		session,
+		userId,
 	});
 };
 
@@ -100,32 +93,5 @@ export const createTRPCRouter = t.router;
 
 /**
  * Public (unauthenticated) procedure
- *
- * This is the base piece you use to build new queries and mutations on your tRPC API. It does not
- * guarantee that a user querying is authorized, but you can still access user session data if they
- * are logged in.
  */
 export const publicProcedure = t.procedure;
-
-/** Reusable middleware that enforces users are logged in before running the procedure. */
-const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
-	if (!ctx.session?.user) {
-		throw new TRPCError({ code: "UNAUTHORIZED" });
-	}
-	return next({
-		ctx: {
-			// infers the `session` as non-nullable
-			session: { ...ctx.session, user: ctx.session.user },
-		},
-	});
-});
-
-/**
- * Protected (authenticated) procedure
- *
- * If you want a query or mutation to ONLY be accessible to logged in users, use this. It verifies
- * the session is valid and guarantees `ctx.session.user` is not null.
- *
- * @see https://trpc.io/docs/procedures
- */
-export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);

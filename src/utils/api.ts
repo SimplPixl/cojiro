@@ -317,7 +317,6 @@ export const useDestroyPlaythrough = (id: string) => {
 				}
 			}
 			void utils.jwt.getPlaythroughs.invalidate();
-			void utils.user.getPlaythroughs.invalidate();
 			setErrorText("");
 		},
 		onError: (err) => {

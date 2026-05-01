@@ -7,7 +7,6 @@ import { useAtom } from "jotai";
 import { useSetAtom } from "jotai";
 import { ageAtom, regionAtom, errorTextAtom } from "~/utils/atoms";
 import Layout from "~/components/Layout";
-import { useSession } from "next-auth/react";
 import { formatFilename } from "~/utils/filename";
 import Image from "next/image";
 
@@ -117,8 +116,6 @@ const StartForm = () => {
 	const setAge = useSetAtom(ageAtom);
 	const setRegion = useSetAtom(regionAtom);
 
-	const { status } = useSession();
-
 	const jwtPlaythroughs = api.jwt.getPlaythroughs.useQuery(
 		{ token: jwt! },
 		{
@@ -133,10 +130,6 @@ const StartForm = () => {
 			},
 		}
 	);
-
-	const userPlaythroughs = api.user.getPlaythroughs.useQuery(undefined, {
-		enabled: status === "authenticated",
-	});
 
 	useEffect(() => {
 		setJwt(localStorage.getItem("playthroughsJwt"));
@@ -190,7 +183,7 @@ const StartForm = () => {
 
 	const inProgressPlaythroughs = (
 		jwtPlaythroughs.data?.playthroughs ?? []
-	).concat(userPlaythroughs.data ?? []);
+	);
 
 	return (
 		<Layout>
