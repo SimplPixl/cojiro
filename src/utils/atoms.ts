@@ -10,4 +10,4 @@ export const mapHeaderTextAtom = atom("");
 export const errorTextAtom = atom("");
 export const winScreenOpenAtom = atom(true);
 
-export const selectedCheckAtom = atom<{ name: string; item: string } | null>(null);
+export const selectedCheckAtom = atom<string | null>(null);

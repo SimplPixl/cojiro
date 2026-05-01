@@ -70,7 +70,24 @@ const LocationList = () => {
 		return <div>Error! region not set correctly</div>;
 	}
 	
-	const selectedCheck = useAtomValue(selectedCheckAtom);
+	const selectedCheckName = useAtomValue(selectedCheckAtom);
+	
+	// Derive the display name and item from the selected check
+	const selectedCheckDisplay = selectedCheckName ? (() => {
+		// Find the check in the current region's locations
+		for (const checkType of checkTypes) {
+			if (checkType === "locations" && selectedCheckName in regions[region]![checkType]) {
+				const displayName = checkType === "entrances" 
+					? `To ${regions[selectedCheckName]!.name}`
+					: locationDisplayName(selectedCheckName, region);
+				const item = playthrough.known_locations[selectedCheckName] ?? 
+					(freestandingItems ? freestandingItems[selectedCheckName] : undefined) ??
+					"Unknown";
+				return { name: displayName, item };
+			}
+		}
+		return null;
+	})() : null;
 	
 	return (
 		<div className="relative flex h-full flex-col bg-surface-container-lowest text-on-surface">
@@ -125,25 +142,25 @@ const LocationList = () => {
 							))
 					)}
 				</div>
+			
+			{/* CENTER overlay - shows selected check info - positioned in center of map area */}
+			{selectedCheckDisplay && (
+				<div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
+					<div className="glass-panel px-8 py-6 rounded-2xl text-center pointer-events-auto border-2 border-tertiary/50">
+						<div className="font-h2 text-h2 text-primary mb-2">{selectedCheckDisplay.name}</div>
+						<div className="font-stat-num text-stat-num text-tertiary text-xl">
+							{selectedCheckDisplay.item}
+						</div>
+					</div>
+				</div>
+			)}
 			</div>
 			
-			{/* Floating overlay elements - separate layer on top */}
+			{/* Top-left overlay: Region name + stats + zoom controls */}
 			<div className="absolute inset-0 z-10 flex flex-col pointer-events-none p-6">
-				{/* Top: Region name + stats + zoom controls */}
 				<div className="flex justify-between items-start">
 					<div className="glass-panel p-4 rounded-lg pointer-events-auto">
 						<h1 className="font-h1 text-h1 text-primary drop-shadow-md">{region}</h1>
-						{/* Show selected check info in center */}
-						{selectedCheck && (
-							<div className="text-center mt-2">
-								<div className="font-label-caps text-label-caps text-on-surface-variant">
-									{selectedCheck.name}
-								</div>
-								<div className="font-stat-num text-stat-num text-tertiary mt-1">
-									{selectedCheck.item}
-								</div>
-							</div>
-						)}
 						<div className="flex items-center gap-4 mt-2">
 							<div className="flex items-center gap-1 text-tertiary">
 								<span className="material-symbols-outlined fill text-[16px]">star</span>

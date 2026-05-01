@@ -5,6 +5,7 @@ import {
 	useLightArrowsHint,
 	useCheckLocation,
 	useCheckStone,
+	usePlaythrough,
 } from "~/utils/api";
 import { useAtomValue, useSetAtom } from "jotai";
 import { idAtom, ageAtom, regionAtom, winScreenOpenAtom, selectedCheckAtom } from "../utils/atoms";
@@ -90,7 +91,8 @@ const CheckSquare = ({
 					beatGanon();
 				} else if (!checked) {
 					if (type === "locations") {
-						setSelectedCheck({ name: displayName, item: item ?? "Unknown" });
+						// Set selected check by name - LocationList will look up the item
+						setSelectedCheck(check);
 						checkLocation(check);
 					} else if (type === "gossip_stones") {
 						checkStone(check);
