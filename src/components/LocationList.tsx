@@ -70,23 +70,15 @@ const LocationList = () => {
 		return <div>Error! region not set correctly</div>;
 	}
 	
-	const selectedCheckName = useAtomValue(selectedCheckAtom);
+	const selectedCheckData = useAtomValue(selectedCheckAtom);
 	
-	// Derive the display name and item from the selected check
-	const selectedCheckDisplay = selectedCheckName ? (() => {
-		// Find the check in the current region's locations
-		for (const checkType of checkTypes) {
-			if (checkType === "locations" && selectedCheckName in regions[region]![checkType]) {
-				const displayName = checkType === "entrances" 
-					? `To ${regions[selectedCheckName]!.name}`
-					: locationDisplayName(selectedCheckName, region);
-				const item = playthrough.known_locations[selectedCheckName] ?? 
-					(freestandingItems ? freestandingItems[selectedCheckName] : undefined) ??
-					"Unknown";
-				return { name: displayName, item };
-			}
-		}
-		return null;
+	// Derive the item from the selected check
+	const selectedCheckDisplay = selectedCheckData ? (() => {
+		const { name, checkId } = selectedCheckData;
+		const item = playthrough.known_locations[checkId] ?? 
+			(freestandingItems ? freestandingItems[checkId] : undefined) ??
+			"Unknown";
+		return { name, item };
 	})() : null;
 	
 	return (
