@@ -15,6 +15,7 @@ import regions from "../utils/regions";
 import { fetchingAtom } from "../utils/atoms";
 import { formatFilename } from "../utils/filename";
 import Image from "next/image";
+import { selectedCheckAtom } from "../utils/atoms";
 
 function locationDisplayName(name: string, region: string): string {
 	const parensMatch = /\(([^)]+)\)/.exec(name);
@@ -69,6 +70,8 @@ const LocationList = () => {
 		return <div>Error! region not set correctly</div>;
 	}
 	
+	const selectedCheck = useAtomValue(selectedCheckAtom);
+	
 	return (
 		<div className="relative flex h-full flex-col bg-surface-container-lowest text-on-surface">
 			{/* Map with overlay */}
@@ -84,114 +87,92 @@ const LocationList = () => {
 						className="mx-auto h-full w-full object-contain opacity-80"
 					/>
 					<div className="absolute inset-0 bg-background/20 mix-blend-multiply" />
-					
-		{/* Floating overlay elements - separate layer on top */}
-				<div className="absolute inset-0 z-10 flex flex-col pointer-events-none p-6">
-					{/* Top: Region name + stats + zoom controls */}
-					<div className="flex justify-between items-start">
-						<div className="glass-panel p-4 rounded-lg pointer-events-auto">
-							<h1 className="font-h1 text-h1 text-primary drop-shadow-md">{region}</h1>
-							<div className="flex items-center gap-4 mt-2">
-								<div className="flex items-center gap-1 text-tertiary">
-									<span className="material-symbols-outlined fill text-[16px]">star</span>
-									<span className="font-stat-num text-stat-num">3/3</span>
+				
+					{/* Map markers - positioned INSIDE the image wrapper so they align with the image */}
+					{checkTypes.flatMap((checkType) =>
+						Object.keys(regions[region]![checkType])
+							.filter(
+								(el) =>
+									regions[region]![checkType][el]![age] &&
+										(regions[region]![checkType][el]!.always! ||
+											checkType === "gossip_stones" ||
+											checkType === "entrances" ||
+											playthrough.locations.includes(el) ||
+											el.includes("GS"))
+							)
+							.map((el) => (
+								<CheckSquare
+									type={checkType}
+									key={el}
+									check={el}
+									coords={{
+										top: `${regions[region]![checkType][el]!.top}%`,
+										left: `${regions[region]![checkType][el]!.left}%`,
+									}}
+									displayName={
+										checkType === "entrances"
+											? `To ${regions[el]!.name}`
+											: locationDisplayName(el, region)
+									}
+									checked={el !== "Ganon" && playthrough.checked.includes(el)}
+									item={
+										checkType === "locations"
+											? playthrough.known_locations[el] ??
+											  (freestandingItems ? freestandingItems[el] : undefined)
+											: undefined
+									}
+								/>
+							))
+					)}
+				</div>
+			</div>
+			
+			{/* Floating overlay elements - separate layer on top */}
+			<div className="absolute inset-0 z-10 flex flex-col pointer-events-none p-6">
+				{/* Top: Region name + stats + zoom controls */}
+				<div className="flex justify-between items-start">
+					<div className="glass-panel p-4 rounded-lg pointer-events-auto">
+						<h1 className="font-h1 text-h1 text-primary drop-shadow-md">{region}</h1>
+						{/* Show selected check info in center */}
+						{selectedCheck && (
+							<div className="text-center mt-2">
+								<div className="font-label-caps text-label-caps text-on-surface-variant">
+									{selectedCheck.name}
 								</div>
-								<div className="flex items-center gap-1 text-on-surface-variant">
-									<span className="material-symbols-outlined text-[16px]">favorite</span>
-									<span className="font-stat-num text-stat-num">1/2</span>
+								<div className="font-stat-num text-stat-num text-tertiary mt-1">
+									{selectedCheck.item}
 								</div>
 							</div>
-						</div>
-						<div className="glass-panel p-2 flex gap-2 rounded-lg pointer-events-auto">
-							<button className="w-10 h-10 flex items-center justify-center rounded bg-surface-container-high text-on-surface hover:bg-surface-variant transition-colors border border-outline-variant">
-								<span className="material-symbols-outlined">zoom_in</span>
-							</button>
-							<button className="w-10 h-10 flex items-center justify-center rounded bg-surface-container-high text-on-surface hover:bg-surface-variant transition-colors border border-outline-variant">
-								<span className="material-symbols-outlined">zoom_out</span>
-							</button>
-						</div>
-					</div>					
-					{/* Bottom: Progress bar */}
-					<div className="mt-auto flex justify-center">
-						<div className="glass-panel px-6 py-3 rounded-full flex items-center gap-4 pointer-events-auto">
-							<span className="font-label-caps text-label-caps text-on-surface-variant">Area Progress</span>
-							<div className="w-48 h-[4px] bg-surface-variant rounded-full overflow-hidden">
-								<div className="h-full progress-gradient w-2/3"></div>
+						)}
+						<div className="flex items-center gap-4 mt-2">
+							<div className="flex items-center gap-1 text-tertiary">
+								<span className="material-symbols-outlined fill text-[16px]">star</span>
+								<span className="font-stat-num text-stat-num">3/3</span>
 							</div>
-							<span className="font-stat-num text-stat-num text-tertiary">66%</span>
+							<div className="flex items-center gap-1 text-on-surface-variant">
+								<span className="material-symbols-outlined text-[16px]">favorite</span>
+								<span className="font-stat-num text-stat-num">1/2</span>
+							</div>
 						</div>
 					</div>
+					<div className="glass-panel p-2 flex gap-2 rounded-lg pointer-events-auto">
+						<button className="w-10 h-10 flex items-center justify-center rounded bg-surface-container-high text-on-surface hover:bg-surface-variant transition-colors border border-outline-variant">
+							<span className="material-symbols-outlined">zoom_in</span>
+						</button>
+						<button className="w-10 h-10 flex items-center justify-center rounded bg-surface-container-high text-on-surface hover:bg-surface-variant transition-colors border border-outline-variant">
+							<span className="material-symbols-outlined">zoom_out</span>
+						</button>
+					</div>
 				</div>
-
-				{/* Map markers - positioned INSIDE the image wrapper so they align with the image */}
-				{checkTypes.flatMap((checkType) =>
-					Object.keys(regions[region]![checkType])
-						.filter(
-							(el) =>
-								regions[region]![checkType][el]![age] &&
-									(regions[region]![checkType][el]!.always! ||
-										checkType === "gossip_stones" ||
-										checkType === "entrances" ||
-										playthrough.locations.includes(el) ||
-										el.includes("GS"))
-						)
-						.map((el) => (
-							<CheckSquare
-								type={checkType}
-								key={el}
-								check={el}
-								coords={{
-									top: `${regions[region]![checkType][el]!.top}%`,
-									left: `${regions[region]![checkType][el]!.left}%`,
-								}}
-								displayName={
-									checkType === "entrances"
-										? `To ${regions[el]!.name}`
-										: locationDisplayName(el, region)
-								}
-								checked={el !== "Ganon" && playthrough.checked.includes(el)}
-								item={
-									checkType === "locations"
-										? playthrough.known_locations[el] ??
-												  (freestandingItems ? freestandingItems[el] : undefined)
-										: undefined
-								}
-							/>
-						))
-				)}
-					{/* Top: Region name + stats + zoom controls */}
-					<div className="flex justify-between items-start">
-						<div className="glass-panel p-4 rounded-lg pointer-events-auto">
-							<h1 className="font-h1 text-h1 text-primary drop-shadow-md">{region}</h1>
-							<div className="flex items-center gap-4 mt-2">
-								<div className="flex items-center gap-1 text-tertiary">
-									<span className="material-symbols-outlined fill text-[16px]">star</span>
-									<span className="font-stat-num text-stat-num">3/3</span>
-								</div>
-								<div className="flex items-center gap-1 text-on-surface-variant">
-									<span className="material-symbols-outlined text-[16px]">favorite</span>
-									<span className="font-stat-num text-stat-num">1/2</span>
-								</div>
-							</div>
+					
+				{/* Bottom: Progress bar */}
+				<div className="mt-auto flex justify-center">
+					<div className="glass-panel px-6 py-3 rounded-full flex items-center gap-4 pointer-events-auto">
+						<span className="font-label-caps text-label-caps text-on-surface-variant">Area Progress</span>
+						<div className="w-48 h-[4px] bg-surface-variant rounded-full overflow-hidden">
+							<div className="h-full progress-gradient w-2/3"></div>
 						</div>
-						<div className="glass-panel p-2 flex gap-2 rounded-lg pointer-events-auto">
-							<button className="w-10 h-10 flex items-center justify-center rounded bg-surface-container-high text-on-surface hover:bg-surface-variant transition-colors border border-outline-variant">
-								<span className="material-symbols-outlined">zoom_in</span>
-							</button>
-							<button className="w-10 h-10 flex items-center justify-center rounded bg-surface-container-high text-on-surface hover:bg-surface-variant transition-colors border border-outline-variant">
-								<span className="material-symbols-outlined">zoom_out</span>
-							</button>
-						</div>
-					</div>					
-					{/* Bottom: Progress bar */}
-					<div className="mt-auto flex justify-center">
-						<div className="glass-panel px-6 py-3 rounded-full flex items-center gap-4 pointer-events-auto">
-							<span className="font-label-caps text-label-caps text-on-surface-variant">Area Progress</span>
-							<div className="w-48 h-[4px] bg-surface-variant rounded-full overflow-hidden">
-								<div className="h-full progress-gradient w-2/3"></div>
-							</div>
-							<span className="font-stat-num text-stat-num text-tertiary">66%</span>
-						</div>
+						<span className="font-stat-num text-stat-num text-tertiary">66%</span>
 					</div>
 				</div>
 			</div>

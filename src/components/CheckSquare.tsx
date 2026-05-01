@@ -7,7 +7,7 @@ import {
 	useCheckStone,
 } from "~/utils/api";
 import { useAtomValue, useSetAtom } from "jotai";
-import { idAtom, ageAtom, regionAtom, winScreenOpenAtom } from "../utils/atoms";
+import { idAtom, ageAtom, regionAtom, winScreenOpenAtom, selectedCheckAtom } from "../utils/atoms";
 import { ImEnter } from "react-icons/im";
 import songs from "../data/songs.json";
 import Image from "next/image";
@@ -50,6 +50,7 @@ const CheckSquare = ({
 	const checkLightArrowsHint = useLightArrowsHint(id);
 	const beatGanon = useBeatGanon(id);
 	const openWinScreen = useSetAtom(winScreenOpenAtom);
+	const setSelectedCheck = useSetAtom(selectedCheckAtom);
 	return (
 		<Tooltip
 			content={
@@ -73,28 +74,29 @@ const CheckSquare = ({
 						? "cursor-default opacity-50"
 						: "cursor-pointer bg-tertiary-container border-2 border-tertiary shadow-[0_0_15px_rgba(234,195,74,0.6)]"
 				}`}
-				onClick={() => {
-					if (checked) {
-						return;
-					} else if (type === "entrances") {
-						setRegion(check);
-					} else if (check === "Take Master Sword") {
-						setAge("adult");
-					} else if (check === "Place Master Sword") {
-						setAge("child");
-					} else if (check === "Light Arrows Hint") {
-						checkLightArrowsHint();
-					} else if (check === "Ganon") {
-						openWinScreen(true);
-						beatGanon();
-					} else if (!checked) {
-						if (type === "locations") {
-							checkLocation(check);
-						} else if (type === "gossip_stones") {
-							checkStone(check);
-						}
+			onClick={() => {
+				if (checked) {
+					return;
+				} else if (type === "entrances") {
+					setRegion(check);
+				} else if (check === "Take Master Sword") {
+					setAge("adult");
+				} else if (check === "Place Master Sword") {
+					setAge("child");
+				} else if (check === "Light Arrows Hint") {
+					checkLightArrowsHint();
+				} else if (check === "Ganon") {
+					openWinScreen(true);
+					beatGanon();
+				} else if (!checked) {
+					if (type === "locations") {
+						setSelectedCheck({ name: displayName, item: item ?? "Unknown" });
+						checkLocation(check);
+					} else if (type === "gossip_stones") {
+						checkStone(check);
 					}
-				}}
+				}
+			}}
 			>
 				{type === "entrances" ? (
 					<ImEnter
