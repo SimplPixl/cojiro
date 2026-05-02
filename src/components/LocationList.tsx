@@ -97,10 +97,10 @@ const LocationList = () => {
 		};
 	})() : null;
 	
-	return (
+		return (
 		<div className="relative flex h-full flex-col bg-surface-container-lowest text-on-surface">
 			{/* Map with overlay */}
-			<div className="relative flex-1 overflow-hidden flex items-center justify-center p-6">
+			<div className="relative flex-1 overflow-hidden flex items-center justify-center p-0">
 				{/* Wrapper that maintains image aspect ratio */}
 				<div className="relative w-full">
 					<Image

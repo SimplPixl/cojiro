@@ -118,14 +118,14 @@ const Cojiro = () => {
 		return (
 		<div className="flex h-screen flex-col bg-background">
 			{/* Header */}
-			<header className="bg-stone-950/80 backdrop-blur-md font-serif font-bold tracking-widest uppercase border-stone-800 border-b-[1px] shadow-[0_4px_20px_rgba(0,0,0,0.5)] flex justify-between items-center px-6 h-16 w-full z-50 shrink-0">
+			<header className="bg-stone-950/80 backdrop-blur-md font-serif font-bold tracking-widest uppercase border-stone-800 border-b-[1px] shadow-[0_4px_20px_rgba(0,0,0,0.5)] flex justify-between items-center px-6 h-20 w-full z-50 shrink-0">
 				<div className="flex items-center gap-4">
 					<Image
 						src="/images/logo/cojiro-white.png"
 						alt="Cojiro"
-						width={120}
-						height={40}
-						className="h-8 w-auto cursor-pointer object-contain"
+						width={200}
+						height={60}
+						className="h-12 w-auto cursor-pointer object-contain"
 					/>
 				</div>
 				<nav className="flex items-center gap-6">
