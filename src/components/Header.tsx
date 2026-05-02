@@ -10,9 +10,13 @@ const Header = () => {
 		<header className="bg-white/90 backdrop-blur-md flex justify-between items-center px-6 h-16 w-full z-50 shrink-0 border-b border-gray-200 shadow-sm">
 			<div className="flex items-center gap-4">
 				<Link href="/" onClick={() => setMenuOpen(false)}>
-					<span className="text-2xl font-black text-gray-900 font-heading">
-						Cojiro
-					</span>
+					<Image
+						src="/images/logo/cojiro-black.png"
+						alt="Cojiro"
+						width={120}
+						height={40}
+						className="h-8 w-auto cursor-pointer object-contain"
+					/>
 				</Link>
 			</div>
 			{/* Desktop nav */}

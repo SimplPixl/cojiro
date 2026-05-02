@@ -5,6 +5,7 @@ import ItemTracker from "~/components/ItemTracker";
 import QuestTracker from "~/components/QuestTracker";
 import SongTracker from "~/components/SongTracker";
 import { useRouter } from "next/router";
+import Image from "next/image";
 import { useSetAtom, useAtomValue, useAtom } from "jotai";
 import { idAtom, errorTextAtom, winScreenOpenAtom } from "~/utils/atoms";
 import { usePlaythrough, useDownloadLog } from "~/utils/api";
@@ -119,9 +120,13 @@ const Cojiro = () => {
 			{/* Header */}
 			<header className="bg-stone-950/80 backdrop-blur-md font-serif font-bold tracking-widest uppercase border-stone-800 border-b-[1px] shadow-[0_4px_20px_rgba(0,0,0,0.5)] flex justify-between items-center px-6 h-16 w-full z-50 shrink-0">
 				<div className="flex items-center gap-4">
-					<span className="text-2xl font-black text-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)] font-h2 text-h2">
-						Cojiro
-					</span>
+					<Image
+						src="/images/logo/cojiro-white.png"
+						alt="Cojiro"
+						width={120}
+						height={40}
+						className="h-8 w-auto cursor-pointer object-contain"
+					/>
 				</div>
 				<nav className="flex items-center gap-6">
 					<a
