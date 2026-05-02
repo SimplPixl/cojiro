@@ -117,15 +117,15 @@ const Cojiro = () => {
 		return (
 		<div className="flex h-screen flex-col bg-background">
 			{/* Header */}
-			<header className="bg-white/90 backdrop-blur-md flex justify-between items-center px-6 h-16 w-full z-50 shrink-0 border-b border-gray-200 shadow-sm">
+			<header className="bg-stone-950/80 backdrop-blur-md font-serif font-bold tracking-widest uppercase border-stone-800 border-b-[1px] shadow-[0_4px_20px_rgba(0,0,0,0.5)] flex justify-between items-center px-6 h-16 w-full z-50 shrink-0">
 				<div className="flex items-center gap-4">
-					<span className="text-2xl font-black text-gray-900 font-heading">
+					<span className="text-2xl font-black text-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)] font-h2 text-h2">
 						Cojiro
 					</span>
 				</div>
 				<nav className="flex items-center gap-6">
 					<a
-						className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-all px-4 py-2 rounded font-label-caps text-label-caps flex items-center gap-2 border border-gray-300"
+						className="text-stone-400 hover:bg-stone-800/50 hover:text-yellow-200 transition-all px-4 py-2 rounded font-label-caps text-label-caps flex items-center gap-2 border border-outline-variant"
 						href={`//github.com/christianlegge/cojiro/issues/new?body=**Describe issue here**%0APlease be as specific as possible!%0A%0A---- DO NOT EDIT BELOW THIS LINE ----%0APlaythrough id: ${playthroughId}`}
 						target="_blank"
 						rel="noreferrer"
