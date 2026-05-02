@@ -89,7 +89,17 @@ export const playthroughRouter = createTRPCRouter({
 				id: playthrough.id,
 				known_woth: playthrough.known_woth,
 				known_barren: playthrough.known_barren,
-				known_locations: playthrough.known_locations as Record<string, string>,
+				// Merge: use known_locations from DB, fallback to seed.locations
+				// Ensure all values are strings (extract item from objects)
+				known_locations: {
+					...Object.fromEntries(
+						Object.entries(seed.locations).map(([k, v]) => [
+							k,
+							typeof v === 'string' ? v : v.item
+						])
+					),
+					...playthrough.known_locations as Record<string, string>,
+				},
 				known_paths: playthrough.known_paths as Record<string, string[]>,
 				finished: playthrough.finished,
 				finishedAt: playthrough.finishedAt,
