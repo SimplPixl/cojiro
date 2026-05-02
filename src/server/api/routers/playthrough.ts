@@ -44,7 +44,7 @@ export const playthroughRouter = createTRPCRouter({
 						},
 					},
 					known_paths: {},
-					known_locations: {},
+					known_locations: seed.locations as any, // Pre-populate from spoiler log
 					known_barren: [],
 					items: startingItems,
 					// No user association - using JWT-based access

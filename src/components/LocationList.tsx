@@ -75,14 +75,10 @@ const LocationList = () => {
 	const selectedCheckDisplay = selectedCheckData ? (() => {
 		const { name, checkId } = selectedCheckData;
 		
-		// Debug: log what's happening
-		console.log('selectedCheckDisplay: checkId =', checkId);
-		console.log('known_locations keys (first 5):', Object.keys(playthrough.known_locations).slice(0, 5));
-		
-		// Try direct lookup
+		// Try direct lookup from known_locations
 		let item = playthrough.known_locations[checkId];
 		
-		// If not found, try with region prefix (e.g., "HF Southeast Grotto Chest")
+		// If not found, try with region prefix (e.g., "KF Midos Top Right Chest")
 		if (!item) {
 			// Find which region this check belongs to
 			for (const [regionName, regionData] of Object.entries(regions)) {
@@ -95,15 +91,9 @@ const LocationList = () => {
 			}
 		}
 		
-		// If still not found and headerText contains this check
-		if (!item && headerText && headerText.startsWith(checkId)) {
-			const match = headerText.match(/^[^:]+: (.+)$/);
-			if (match) item = match[1];
-		}
-		
 		return { 
 			name, 
-			item: item ?? "NOT FOUND - " + checkId
+			item: item ?? "Item not found" 
 		};
 	})() : null;
 	
